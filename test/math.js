@@ -21,12 +21,20 @@ global.FOUR.test.math = {
       [0,0,1]
     ]);
     
+    var square5 = Matrix(1,0,0,
+                         0,1,0,
+                         0,0,1);
+    
     return square1.equals(square2) &&
            square1.equals(square3) &&
            square1.equals(square4) &&
+           square1.equals(square5) &&
            square2.equals(square3) &&
            square2.equals(square4) &&
-           square3.equals(square4);
+           square2.equals(square5) &&
+           square3.equals(square4) &&
+           square3.equals(square5) &&
+           square4.equals(square5);
   },
   
   
@@ -222,7 +230,26 @@ global.FOUR.test.math = {
   
   "Matrix#resize": function matrixResize(){
     return Matrix(3).resize(3,4).equals( Matrix([ [1,0,0], [0,1,0], [0,0,1], [0,0,0] ]) ) &&
-           Matrix(3).resize(4,2).equals( Matrix([ [1,0,0,0], [0,1,0,0] ]) );
+           Matrix(3).resize(4,2).equals( Matrix([ [1,0,0,0], [0,1,0,0] ]) ) &&
+           Matrix(1, 2, 3,
+                  4, 5, 6,
+                  7, 8, 9) .resize( 2, 2 ) .equals( Matrix(1, 2,
+                                                           4, 5) );
+  },
+  
+  
+  "Matrix#determinant": function matrixDeterminant(){
+    return Matrix(3, 8, 4, 6                         ).determinant() === -14 &&
+           Matrix(1, 2, 1, 3, 0, 4, 8, 4, 10         ).determinant() ===   0 &&
+           Matrix(1,2,2,1,0,2,0,0,-1,-4,-2,-1,1,4,4,1).determinant() ===   0 &&
+           Matrix(1,0,2,-1,3,0,0,5,2,1,4,-3,1,0,5,0  ).determinant() ===  30 &&
+           Matrix(  4,-1, 1,   4, 5, 3,   -2, 0, 0   ).determinant() ===  16;
+  },
+  
+  
+  "Matrix.multiply": function matrixMultiply(){
+    console.log("TODO test for Matrx.multiply");
+    return 1;
   }
   
 };

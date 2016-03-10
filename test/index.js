@@ -36,6 +36,8 @@ global.FOUR.test = function test(){
 
   if(succeeded){ console.log("FOUR: All of the "+tested+" tests returned success."); }
   else{ console.log("FOUR: "+failed+" out of "+tested+" tests failed."); }
+  
+  return failed;
 };
 
 })(this);

@@ -23,24 +23,32 @@ function filler(l,x){
 
 
 /**
- * @name FOUR.Matrix^2
  * Matrix of any dimesions
+ * @name Matrix^2
  * @constructor
  * @param {number[][]} list two-dimensional array of numbers
  */
 
 
 /**
- * @name FOUR.Matrix^3
  * Square matrix of any size
+ * @name Matrix^3
  * @constructor
  * @param {number[]} list one-dimensional array of lenght n^2
  */
 
 
 /**
- * @name FOUR.Matrix^4
+ * Square matrix of any size
+ * @name Matrix^4
+ * @constructor
+ * @param {...number} n^2 numbers to fill the matrix
+ */
+
+
+/**
  * Empty matrix of dimensions 0x0
+ * @name Matrix^5
  * @constructor
  */
 
@@ -69,11 +77,18 @@ FOUR.Matrix = function constructor( w, h ){
   
   if(typeof w === "undefined" && typeof h === "undefined"){ w=h=0; }
   
+  else if(
+    arguments.length > 2 &&
+    Number.isInteger(Math.sqrt(arguments.length))
+  ){
+    w = Array.from(arguments);
+  }
+  
   if(Array.isArray(w)){
     if( typeof w[0].valueOf() === "number" ){
       var side = Math.sqrt( w.length );
       
-      if( side !== (side|0) ) { throw Error("This is not a square matrix. Use two-dimensional array as an argument."); }
+      if( side !== (side|0) ) { throw TypeError("This is not a square matrix. Use two-dimensional array as an argument."); }
       
       this.width  = side;
       this.height = side;
@@ -95,10 +110,14 @@ FOUR.Matrix = function constructor( w, h ){
       
       
     }else{
-      throw Error("Invalid argument.");
+      throw TypeError("Invalid arguments.");
     }
     
   }else{
+    if(arguments.length>2){
+      throw TypeError("Invalid arguments.");
+    }
+    
     if( isNaN(+h) )  { h = w; }
     
     this.width  = +w;
@@ -111,6 +130,55 @@ FOUR.Matrix = function constructor( w, h ){
 };
 
 
+/**
+ * Multiplies two matrices, returns a new one
+ * @param   {FOUR.Matrix} A
+ * @param   {FOUR.Matrix} B A.width === B.height
+ * @returns {FOUR.Matrix} C
+ */
+
+FOUR.Matrix.multiply = function multiply(A, B){
+  if( !( A instanceof FOUR.Matrix &&
+         B instanceof FOUR.Matrix &&
+         A.width == B.height        )){
+    throw new TypeError("Arguments 1 and 2 must be two matrices, the width of the former one has to be equal to the height of the latter one.");
+  }
+  
+  var C = new Matrix(B.width, A.height);
+  (B.width == A.height) && C.zero();
+  
+  var i  = -1,
+      l  = C.length,
+      w  = C.width,
+      h  = C.height,
+      Ae = A.elements,
+      Be = B.elements,
+      Ce = C.elements;
+  
+  while( ++i < l ){
+    var j = -1;
+    while( ++j < h ){
+      
+      Ce[i] += Ae[ j + ((i/w)|0) * h ]
+             * Be[ j*w + i%w         ];
+      
+    }
+  }
+  
+  return C;
+}
+
+
+Object.defineProperty( FOUR.Matrix.prototype, "length",{
+  configurable: true,
+  enumerable:   true,
+  set: ()=>undefined,
+  get: function(){
+    return +this.width * +this.height;
+  }
+});
+
+
 
 /**
  * @callback FOUR.Matrix#forEach~callback
@@ -121,7 +189,7 @@ FOUR.Matrix = function constructor( w, h ){
 
 /**
  * Execute the callback function for every entry of the matrix
- * @param FOUR.Matrix#forEach~callback callback
+ * @param {FOUR.Matrix#forEach~callback} callback
  */
 
 FOUR.Matrix.prototype.forEach = function forEach( f ){
@@ -189,7 +257,7 @@ FOUR.Matrix.prototype.resize = function resize( w, h ){
   
   if( w !== tw ){
     i=-1;
-    while(++i < h) te.splice( (i+1)*(min+al), rm, add );
+    while(++i < h) te.splice( (i+1)*(min+al), rm, ...add );
     this.width = w;
   }
   
@@ -220,8 +288,8 @@ FOUR.Matrix.prototype.identity = function identity(){
 
 
 /**
- * @name FOUR.Matrix#set^2
  * Set entries of the matrix using an array of numbers
+ * @name Matrix#set^2
  * @param {number[]} list
  * @returns {FOUR.Matrix} Returns `this` for chaining
  */
