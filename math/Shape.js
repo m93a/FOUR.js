@@ -90,11 +90,7 @@ FOUR.Shape.prototype.extrude = function extrude(height){
       }
     }
     
-    tf = (t[f]=[[]]) [0];
-    for( var i = 0, l = 2*offset; i < l; i++ ){
-      if(i<offset) tf.push(i);
-      else         tf.push(3*offset-1-i);
-    }
+    t[f] = [ [].concat( t[f-1][0], Array.from( t[f-1][1] ).reverse() ) ];
   
   }
   
