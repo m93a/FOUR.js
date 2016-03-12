@@ -14,9 +14,12 @@ FOUR.Camera = function constructor(){
     return r;
   }
   
+  this.camera = this;
+  
 }
 
-FOUR.Object.prototype.scene = null;
+FOUR.Camera.prototype.connect    = FOUR.VisualNode.prototype.connect;
+FOUR.Camera.prototype.disconnect = FOUR.VisualNode.prototype.disconnect;
 
 
 })(this);

@@ -16,7 +16,9 @@ FOUR.Object = function constructor(){
   
 }
 
-FOUR.Object.prototype.scene = null;
+FOUR.Object.prototype.scene     = null;
+FOUR.Object.prototype.transform = null;
+FOUR.Object.prototype.dimension =    0;
 
 
 })(this);
