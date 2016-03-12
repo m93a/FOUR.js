@@ -1,0 +1,3 @@
+[submodule "lib/clone"]
+	path = lib/clone
+	url = https://github.com/dankogai/js-object-clone.git
