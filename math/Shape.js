@@ -17,10 +17,20 @@ var FOUR = global.FOUR = global.FOUR || Object.create(null);
  * @prop {...number[][]} 1..length - 2D arrays of n-faces. Informally Array.< Face.< Integer = index of vertex > >.
  */
 
-FOUR.Shape = function(){
+FOUR.Shape = function constructor(){
+  
+  //if not called as an constructor
+  if(!(this instanceof constructor)){
+    var r;
+    constructor.apply(r=Object.create(constructor.prototype),arguments);
+    return r;
+  }
+  
   this.dimension = 0;
   this[0] = new Float64Array(0);
 };
+
+FOUR.Shape.prototype = Object.create( FOUR.Object.prototype );
 
 Object.defineProperty(FOUR.Shape, "length", {
   configurable: true,
