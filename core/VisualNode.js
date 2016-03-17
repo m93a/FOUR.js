@@ -8,10 +8,10 @@ var FOUR = global.FOUR = global.FOUR || Object.create(null);
  * @constructor
  */
 
-FOUR.VisualNode = function constructor(){
+FOUR.VisualNode = function constructor(force){
   
   //if not called as an constructor
-  if(!(this instanceof constructor)){
+  if(!(this instanceof constructor) && !force){
     var r;
     constructor.apply(r=Object.create(constructor.prototype),arguments);
     return r;
@@ -56,8 +56,8 @@ FOUR.VisualNode.prototype.camera = null;
 
 Object.defineProperty(FOUR.VisualNode.prototype, "__feed", { value: function(food){
   var D = food.dimension;
-  if(D !== food.faces.length){ throw InternalError("Assert D === faces.length"); }
-  if(typeof this.processer !== "function"){ throw InternalError("Assert this.processor is a function"); }
+  //if(D+1 !== food.faces.length){ debugger; throw InternalError("Assert D+1 === faces.length"); }
+  if(typeof this.processor !== "function"){ throw InternalError("Assert this.processor is a function"); }
   
   //clone data before modifying
   if(food.fragile && this.destructive){
@@ -79,14 +79,13 @@ Object.defineProperty(FOUR.VisualNode.prototype, "__feed", { value: function(foo
   
   this.processor(data);
   
+  if( this.__out.length === 0 ) return;
+  
   D = food.dimension = data.dimension;
   food.fragile = food.fragile || data.fragile;
   
-  while(D>food.faces.length) food.faces.push([]);
-  food.faces.length = D;
-  
-  while(D>food.color.length) food.color.push( new Uint8Clamped(0) );
-  food.color.length = D;
+  while(D+1>food.faces.length) food.faces.push([]);
+  food.faces.length = D+1;
   
   this.__out[0].__feed(food);
   for(var i = 1; i < this.__out.length; i++){
@@ -132,6 +131,11 @@ FOUR.VisualNode.prototype.disconnect = function(node){
     throw new TypeError("Argument 1 has to be an instance of FOUR.VisualNode");
   }
 }
+
+
+FOUR.VisualNode.prototype.update = function(){
+  return this.__in.update();
+};
 
 
 })(this);

@@ -12,6 +12,17 @@ function filler(l,x){
   return arr;
 }
 
+//marks obj as needsUpdate
+function needsUpdate(self){
+  self.needsUpdate = true;
+  if(self.object){
+    self.object.needsUpdate = true;
+    if(self.object.scene){
+      self.object.scene.needsUpdate = true;
+    }
+  }
+}
+
 var order = "xyzwvutsrqponmlkjihgfedcba";
 
 
@@ -159,9 +170,13 @@ Object.defineProperty(FOUR.Euler.prototype, "order",{
     }
     
     this.__order = o;
+    needsUpdate(this);
   }
   
 });
+
+
+FOUR.Euler.prototype.set = FOUR.Matrix.prototype.set;
 
 
 })(this);

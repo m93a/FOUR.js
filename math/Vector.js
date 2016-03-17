@@ -7,17 +7,32 @@ var FOUR = global.FOUR = global.FOUR || Object.create(null);
 // fast square
 function sq(a){ a = +a; return +(a*a); }
 
+// creates an array of length l filled with x
+function filler(l,x){
+  var arr = [];
+  while(--l >= 0){
+    arr.push(x);
+  }
+  return arr;
+}
 
+
+/**
+ * Empty vector of dimension D
+ * @name FOUR.Vector^2
+ * @constructor
+ * @param {number} D
+ */
 
 /**
  * Vector represented by a column matrix
  * @constructor
- * @param {...number} any number of vector components
+ * @param {...number} more than one number of vector components
  *
  * @prop {number} width Always 1 hence it's a column vector
  */
 
-FOUR.Vector = function constructor(){
+FOUR.Vector = function constructor( D ){
   
   //if not called as an constructor
   if(!(this instanceof constructor)){
@@ -26,8 +41,14 @@ FOUR.Vector = function constructor(){
     return r;
   }
   
-  this.height   = arguments.length;
-  this.elements = Array.from(arguments);
+  if(arguments.length === 1){
+    this.elements = filler(D,0);
+  
+  }else{
+    this.elements = Array.from(arguments);
+  }
+  
+  this.height   = this.elements.length;
 };
 
 FOUR.Vector.prototype = Object.create(FOUR.Matrix.prototype);

@@ -2,6 +2,21 @@
 
 var FOUR = global.FOUR = global.FOUR || Object.create(null);
 
+
+//Helper functions
+
+function register(obj,name,prop){
+  obj[name] = prop;
+  prop.object = obj;
+}
+function unregister(obj,name){
+  obj[name].object = null;
+  obj[name] = null;
+}
+
+
+
+
 /**
  * @constructor
  */
@@ -33,13 +48,13 @@ FOUR.Scene.prototype.add = function add( obj ){
     this.__set.add( obj );
     
     obj.scene = this;
-    obj.matrix = new FOUR.Matrix( D+1 );
-    var v = obj.position = new FOUR.Vector( D );
-    var r = obj.rotation = new FOUR.Euler( Math.nCr(D,2) );
+    register(obj,"matrix",   new FOUR.Matrix( D+1 ));
+    register(obj,"position", new FOUR.Vector( D ));
+    register(obj,"rotation", new FOUR.Euler ( D ));
+    register(obj,"scale",    new FOUR.Vector( D ));
     
-    for( var i=0; i<D; i++ ){
-      Object.defineProperty(
-    }
+    obj.scale.one();
+    obj.needsUpdate = true;
     
   }else{
     throw new TypeError("Only instances of FOUR.Object can be added to the scene.");
@@ -53,8 +68,11 @@ FOUR.Scene.prototype.remove = function remove( obj ){
       obj.scene === this            ){
     
     this.__set.delete( obj );
-    obj.scene = null;
-    obj.transform = null;
+    unregister(obj,"scene"   );
+    unregister(obj,"matrix"  );
+    unregister(obj,"position");
+    unregister(obj,"rotation");
+    unregister(obj,"scale"   );
     
   }
 }

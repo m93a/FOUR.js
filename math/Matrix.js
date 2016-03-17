@@ -27,6 +27,16 @@ function roundTiny(n){
   return n;
 }
 
+//marks obj as needsUpdate
+function needsUpdate(self){
+  self.needsUpdate = true;
+  if(self.object){
+    self.object.needsUpdate = true;
+    if(self.object.scene){
+      self.object.scene.needsUpdate = true;
+    }
+  }
+}
 
 
 /**
@@ -226,7 +236,7 @@ FOUR.Matrix.prototype.forEach = function forEach( f ){
     y = -1;
     while(++y < h){
       var n = f.call(this,te[x+y*w],x,y);
-      if( typeof n === "number" || n instanceof Number ) { te[x+y*w] = +n; }
+      if( typeof n === "number" || n instanceof Number ) { te[x+y*w] = +n; needsUpdate(this); }
     }
   }
   return this;
@@ -288,6 +298,8 @@ FOUR.Matrix.prototype.resize = function resize( w, h ){
     this.width = w;
   }
   
+  needsUpdate(this);
+  
   return this;
 };
 
@@ -298,7 +310,20 @@ FOUR.Matrix.prototype.resize = function resize( w, h ){
  */
 
 FOUR.Matrix.prototype.zero = function zero(){
-  this.forEach(function(){return 0;});
+  this.forEach(()=>0);
+  needsUpdate(this);
+  return this;
+};
+
+
+/**
+ * Fill the matrix with all ones
+ * @returns {FOUR.Matrix} Returns `this` for chaining
+ */
+
+FOUR.Matrix.prototype.one = function one(){
+  this.forEach(()=>1);
+  needsUpdate(this);
   return this;
 };
 
@@ -310,6 +335,7 @@ FOUR.Matrix.prototype.zero = function zero(){
 
 FOUR.Matrix.prototype.identity = function identity(){
   this.forEach(function(n,x,y){return +(x===y)});
+  needsUpdate(this);
   return this;
 };
 
@@ -336,6 +362,8 @@ FOUR.Matrix.prototype.set = function set( list ){
   while(++i<l){
     te[i] = +list[i];
   }
+  
+  needsUpdate(this);
   return this;
 }
 
@@ -351,6 +379,7 @@ FOUR.Matrix.prototype.copy = function copy( m ){
   this.height = m.height;
   this.elements.length = m.elements.length;
   this.set(m.elements);
+  needsUpdate(this);
   return this;
 };
 
@@ -529,11 +558,27 @@ FOUR.Matrix.prototype.setPosition = function setPosition( v ){
 
 
 
+FOUR.Matrix.prototype.compose = function compose( translation, euler, scale ){
+  this.makeRotationFromEuler( euler );
+  this.scale( scale );
+  this.setPosition( translation );
+  
+  translation.needsUpdate =
+  euler.needsUpdate =
+  scale.needsUpdate =
+  this.needsUpdate = false;
+  
+  if(this.object){ this.object.needsUpdate = true; }
+  
+  return this;
+};
+
+
+
 /**
  * Composes a transformation matrix from position, rotation and scale
  * @returns {FOUR.Matrix} Returns `this` for chaining
  */
-FOUR.Matrix.prototype.compose = function compose( position, rotation, scale ){}; //TODO
 FOUR.Matrix.prototype.decompose = function decompose( position, rotation, scale ){}; //TODO
 
 
