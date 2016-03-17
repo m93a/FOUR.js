@@ -20,6 +20,13 @@ function filler(l,x){
   return arr;
 }
 
+// rounds tiny numbers to zero
+function roundTiny(n){
+  if(Math.abs(n) < Number.EPSILON)
+  return 0;
+  return n;
+}
+
 
 
 /**
@@ -131,21 +138,41 @@ FOUR.Matrix = function constructor( w, h ){
 
 
 /**
- * Multiplies two matrices, returns a new one
- * @param   {FOUR.Matrix} A
- * @param   {FOUR.Matrix} B A.width === B.height
- * @returns {FOUR.Matrix} C
+ * Returns the lower of width & height
+ * @name FOUR.Matrix#dimension
  */
 
-FOUR.Matrix.multiply = function multiply(A, B){
+Object.defineProperty(FOUR.Matrix.prototype,"dimension",{
+  configurable: true,
+  enumerable: true,
+  get: function(){ return Math.min(this.height, this.width); }
+});
+
+
+/**
+ * Multiplies two matrices, returns a new one
+ * @param   {FOUR.Matrix}  A
+ * @param   {FOUR.Matrix}  B  A.width === B.height
+ * @param   {FOUR.Matrix} [C] write into this matrix
+ * @returns {FOUR.Matrix}  C
+ */
+
+FOUR.Matrix.multiply = function multiply(A, B, C){
   if( !( A instanceof FOUR.Matrix &&
          B instanceof FOUR.Matrix &&
          A.width == B.height        )){
     throw new TypeError("Arguments 1 and 2 must be two matrices, the width of the former one has to be equal to the height of the latter one.");
   }
   
-  var C = new Matrix(B.width, A.height);
-  (B.width == A.height) && C.zero();
+  if( C instanceof FOUR.Matrix ){
+    if( C.width !== B.width || C.height !== A.height ) C.resize( B.width, A.height);
+    C.zero();
+    
+  }else{
+    C = new FOUR.Matrix(B.width, A.height);
+    if(B.width === A.height) C.zero();
+  }
+  
   
   var i  = -1,
       l  = C.length,
@@ -304,6 +331,7 @@ FOUR.Matrix.prototype.set = function set( list ){
   var i = -1, te = this.elements, l = te.length;
   
   if( arguments.length === l ){ list = arguments; }
+  else if( list instanceof FOUR.Matrix ){ list = list.elements; }
   
   while(++i<l){
     te[i] = +list[i];
@@ -331,20 +359,7 @@ FOUR.Matrix.prototype.copy = function copy( m ){
  * Computes the determinant of the matrix using Bareiss algorithm
  * @returns {number} determinant
  */
-/*
-FOUR.Matrix.prototype.determinant = function determinant(){
-  var result = 0, x = -1, y, a, b, w = this.width, h = this.height;
-  while(++x < w){
-    y = -1;
-    a = b = 1;
-    while(++y < h){
-      a *= this.elements[ mod(x+y,w) + y*w ];
-      b *= this.elements[ mod(x-y,w) + y*w ];
-    }
-    result += a - b;
-  }
-  return result;
-};*/
+
 FOUR.Matrix.prototype.determinant = (function(){
   
   var tmp = FOUR.Matrix();
@@ -408,6 +423,110 @@ FOUR.Matrix.prototype.transpose = function transpose(){
   this.resize(h,w);
   return this;
 }
+
+
+
+/**
+ * Sets the rotation submatrix of this matrix to the rotation specified by Euler angles, the rest of the matrix is identity.
+ * @param {FOUR.Euler} euler
+ * @param {number=0} xOffset
+ * @param {number=0} yOffset
+ * @returns {FOUR.Matrix} Returns `this` for chaining
+ */
+
+FOUR.Matrix.prototype.makeRotationFromEuler = (function(){
+  var tempArr = [];
+  var resArr  = [];
+  return function makeRotationFromEuler(euler, xOffset, yOffset){
+    if(!(euler instanceof FOUR.Euler)) throw new TypeError("Argument 1 must inherit from FOUR.Euler.");
+    if( this.width !== this.height ) throw new TypeError("This is not a square matrix.");
+    
+    var ee = euler.elements;
+    var te = this.elements;
+    var eD = euler.dimension;
+    var tD = this.dimension;
+    var w = this.width;
+    var el = euler.length;
+    var tl = this.length;
+    var order = euler.__order;
+    
+    if(eD>tD) throw new TypeError("Rotation vector must be smaller than the matrix");
+    
+    this.identity();
+    var temp = tempArr[w] = tempArr[w] || new FOUR.Matrix(w);
+    var res  =  resArr[w] =  resArr[w] || new FOUR.Matrix(w);
+    
+    for(var i=0, l=order.length; i<l; i++){
+      var n = order[i];
+      var r = euler.__rotationFromNumber( n );
+      
+      temp.forEach(function(v,x,y){
+        if( x===y ){
+          if( x===r[0] || x===r[1] ){
+            return roundTiny(Math.cos(ee[n]));
+            
+          }else{
+            return 1;
+          }
+          
+        }else{
+          if( x===r[0] && y===r[1] ){
+            return roundTiny( -Math.sin(ee[n]) );
+            
+          }else if( x===r[1] && y===r[0] ){
+            return roundTiny( Math.sin(ee[n]) );
+            
+          }else{
+            return 0;
+          }
+        }
+      });
+      
+      FOUR.Matrix.multiply(this,temp,res);
+      this.set(res);
+    }
+    
+    return this;
+  }
+})();
+
+
+
+FOUR.Matrix.prototype.scale = function scale( v ){
+  if( typeof v === "number" ){
+    this.forEach( n=>v*n );
+  
+  }else if( v instanceof FOUR.Vector ){
+    
+    var ve = v.elements;
+    var l = ve.length;
+    
+    this.forEach( function(n,x,y){
+      if( x<l && y<l ) return n*ve[x];
+    });
+    
+  }else throw new TypeError("Argument 1 must be either a vector or a scalar.");
+  return this;
+};
+
+
+
+FOUR.Matrix.prototype.setPosition = function setPosition( v ){
+  if( v instanceof FOUR.Vector ){
+    
+    var te = this.elements;
+    var w = this.width;
+    var ve = v.elements;
+    var l = Math.min(ve.length, w);
+    
+    for(var i=0; i<l; i++){
+      te[ (i+1)*w -1 ] = ve[i];
+    }
+    
+  }else throw new TypeError("Argument 1 must be either a vector or a scalar.");
+  return this;
+};
+
 
 
 /**

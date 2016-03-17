@@ -18,6 +18,14 @@ function sq(a){ a = +a; return +(a*a); }
  */
 
 FOUR.Vector = function constructor(){
+  
+  //if not called as an constructor
+  if(!(this instanceof constructor)){
+    var r;
+    constructor.apply(r=Object.create(constructor.prototype),arguments);
+    return r;
+  }
+  
   this.height   = arguments.length;
   this.elements = Array.from(arguments);
 };
