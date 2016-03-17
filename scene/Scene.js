@@ -21,16 +21,26 @@ FOUR.Scene = function constructor(D){
 
 
 FOUR.Scene.prototype.add = function add( obj ){
+  var D = this.dimension;
+  
   if( obj instanceof FOUR.Object ){
-    if( this.dimension < obj.dimension ){
-      throw new TypeError("Cannot add a "+obj.dimension+"-dimensional object into a "+this.dimension+"-dimensional scene.");
+    if( D < obj.dimension ){
+      throw new TypeError("Cannot add a "+obj.dimension+"-dimensional object into a "+D+"-dimensional scene.");
     }
     if( obj.scene !== null ){
       obj.scene.remove( obj );
     }
     this.__set.add( obj );
+    
     obj.scene = this;
-    obj.transform = new Matrix( this.dimension+1 );
+    obj.matrix = new FOUR.Matrix( D+1 );
+    var v = obj.position = new FOUR.Vector( D );
+    var r = obj.rotation = new FOUR.Euler( Math.nCr(D,2) );
+    
+    for( var i=0; i<D; i++ ){
+      Object.defineProperty(
+    }
+    
   }else{
     throw new TypeError("Only instances of FOUR.Object can be added to the scene.");
   }

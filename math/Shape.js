@@ -10,6 +10,7 @@ var FOUR = global.FOUR = global.FOUR || Object.create(null);
 /**
  * An n-dimensional shape
  * @constructor
+ * @extends FOUR.Object
  * 
  * @prop {number}        dimension - Dimension of the geometric object
  * @prop {number}        length    - Number of different types of n-faces of the geometric object – ie. dimension + 1
@@ -31,6 +32,7 @@ FOUR.Shape = function constructor(){
 };
 
 FOUR.Shape.prototype = Object.create( FOUR.Object.prototype );
+FOUR.Shape.prototype.constructor = FOUR.Shape;
 
 Object.defineProperty(FOUR.Shape, "length", {
   configurable: true,
@@ -95,7 +97,7 @@ FOUR.Shape.prototype.extrude = function extrude(height){
         if(f === 1){
           tf.push([ i, i+l ]);
         }else{
-          tf.push([].concat( t[f-1][i], Array.from(t[f-1][i+l]).reverse() )); //TODO make clearer
+          tf.push([].concat( t[f-1][i], Array.from(t[f-1][i+l]).reverse() )); //TODO clarify
         }
       }
     }

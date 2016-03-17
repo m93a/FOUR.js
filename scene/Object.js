@@ -17,7 +17,9 @@ FOUR.Object = function constructor(){
 }
 
 FOUR.Object.prototype.scene     = null;
-FOUR.Object.prototype.transform = null;
+FOUR.Object.prototype.matrix    = null;
+FOUR.Object.prototype.position  = null;
+FOUR.Object.prototype.rotation  = null;
 FOUR.Object.prototype.dimension =    0;
 
 

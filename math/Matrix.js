@@ -410,4 +410,12 @@ FOUR.Matrix.prototype.transpose = function transpose(){
 }
 
 
+/**
+ * Composes a transformation matrix from position, rotation and scale
+ * @returns {FOUR.Matrix} Returns `this` for chaining
+ */
+FOUR.Matrix.prototype.compose = function compose( position, rotation, scale ){}; //TODO
+FOUR.Matrix.prototype.decompose = function decompose( position, rotation, scale ){}; //TODO
+
+
 })(this);

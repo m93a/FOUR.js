@@ -37,8 +37,8 @@ FOUR.VisualNode = function constructor(){
   
   //set up internal properties
   Object.defineProperties(this,{
-    __out: {writable: true, value:[]},
-    __in:  {writable: true, value:0 }
+    __out: {value:[]},
+    __in:  {value: 0, writable: true}
   });
   
 }
@@ -57,7 +57,7 @@ FOUR.VisualNode.prototype.camera = null;
 Object.defineProperty(FOUR.VisualNode.prototype, "__feed", { value: function(food){
   var D = food.dimension;
   if(D !== food.faces.length){ throw InternalError("Assert D === faces.length"); }
-  if(typeof this.processer !== "function"){ throw InternalError("Assert this.processor is a function");
+  if(typeof this.processer !== "function"){ throw InternalError("Assert this.processor is a function"); }
   
   //clone data before modifying
   if(food.fragile && this.destructive){
