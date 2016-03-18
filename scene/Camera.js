@@ -140,7 +140,7 @@ FOUR.Camera.prototype.update = function update(){
     }
   }
   
-  console.log(this);
+  console.log("n", food);
   this.__feed(food);
   
 };

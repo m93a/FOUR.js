@@ -38,6 +38,46 @@ function needsUpdate(self){
   }
 }
 
+//get row of matrix
+function getRow( M, n ){
+  var w = M.width;
+  var e = M.elements;
+  return e.slice( n*w, (n+1)*w );
+}
+
+//set row of matrix
+function setRow( M, n, a ){
+  var w = M.width;
+  var e = M.elements;
+  var l = Math.min( a.length, w );
+  
+  for(var i=0, j=n*w; i<l; i++, j++)
+    e[j] = a[i];
+}
+
+//get col of matrix
+function getColumn( M, n ){
+  var w = M.width;
+  var h = M.height;
+  var e = M.elements;
+  var a = [];
+  for(var i=0; i<h; i++)
+    a[i] = e[ i*w + n ];
+  return a;
+}
+
+//set col of matrix
+function setColumn( M, n, a ){
+  var w = M.width;
+  var l = Math.min(M.height, a.length);
+  var e = M.elements;
+  for(var i=0; i<l; i++)
+    e[ i*w + n ] = a[i];
+}
+
+window.gC = getColumn;
+window.sC = setColumn;
+
 
 /**
  * Matrix of any dimesions
@@ -184,23 +224,14 @@ FOUR.Matrix.multiply = function multiply(A, B, C){
   }
   
   
-  var i  = -1,
-      l  = C.length,
-      w  = C.width,
-      h  = C.height,
-      Ae = A.elements,
-      Be = B.elements,
-      Ce = C.elements;
-  
-  while( ++i < l ){
-    var j = -1;
-    while( ++j < h ){
-      
-      Ce[i] += Ae[ j + ((i/w)|0) * h ]
-             * Be[ j*w + i%w         ];
-      
+  C.forEach(function(v,x,y){
+    var row = getRow(A,y);
+    var col = getColumn(B,x);
+    for(var i=0, l=row.length; i<l; i++){
+      v += row[i]*col[i];
     }
-  }
+    return v;
+  });
   
   return C;
 }
@@ -557,7 +588,10 @@ FOUR.Matrix.prototype.setPosition = function setPosition( v ){
 };
 
 
-
+/**
+ * Composes a transformation matrix from position, rotation and scale
+ * @returns {FOUR.Matrix} Returns `this` for chaining
+ */
 FOUR.Matrix.prototype.compose = function compose( translation, euler, scale ){
   this.makeRotationFromEuler( euler );
   this.scale( scale );
@@ -576,10 +610,204 @@ FOUR.Matrix.prototype.compose = function compose( translation, euler, scale ){
 
 
 /**
- * Composes a transformation matrix from position, rotation and scale
- * @returns {FOUR.Matrix} Returns `this` for chaining
+ * Inverse of a homogeneous coord transformation matrix.
+ * FIXME doesn't work
+ * @returns{Matrix}
  */
-FOUR.Matrix.prototype.decompose = function decompose( position, rotation, scale ){}; //TODO
+
+//http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche53.html
+
+FOUR.Matrix.prototype.inverseTransformation = function(){
+  var w = this.width;
+  if(this.height !== w) throw new TypeError("Matrix must be square");
+  
+  var center = this.submatrix(0, w-2, 0, w-2);
+  var lightSide = this.submatrix(0,w-2,w-1,w-1);
+  
+  center.transpose();
+  
+  var darkSide = FOUR.Matrix.multiply( center, lightSide );
+  darkSide.scale( -1 );
+  
+  var inv = center.augment( darkSide );
+  inv.height++;
+  for(var i=0; i<w-1; i++){
+    inv.elements.push(0);
+  }
+  inv.elements.push(1);
+  
+  return inv;
+};
+
+
+/**
+ * Calculate the inverse matrix.
+ * FIXME does not work
+ * @returns {Matrix}
+ */
+
+FOUR.Matrix.prototype.inverse = function inverse(){
+  if( this.width !== this.height ) {
+    throw new TypeError( 'Matrix must be square' );
+  }
+  
+  var M = this.augment( FOUR.Matrix( this.width ) ),
+      row, row_before, new_row, i, j, k, factor, rows, columns;
+  
+  try{
+    M = M.decomposeLU();
+    rows    = M.height;
+    columns = M.width;
+    
+    // TODO The following two loops can probably be rewritten into something smarter
+    for( i = rows; i > 1; i-- ) {
+      row_before = getRow( M, i-1 );
+      row = getRow( M, i );
+      factor = row_before[i - 1] / row[i - 1];
+      
+      new_row = [];
+      for( k = 0; k < columns; k++ ) {
+        new_row[k] = row_before[k] - row[k] * factor;
+      }
+      setRow( M, i-1, new_row );
+    }
+    
+    for( j = 1; j <= rows; j++ ) {
+      row = getRow( M, j );
+      new_row = [];
+      
+      for( k = 0; k < columns; k++ ) {
+        new_row[k] = row[k] / row[j - 1];
+      }
+      
+      setRow( M, j, new_row );
+    }
+  } catch( e ) {
+    // TODO if caching attributes like the determinant is introduced, replace this by checking
+    // the determinant and throw a general error here
+    throw new TypeError("Matrix is singular");
+  }
+  
+  return M.submatrix( 1, rows, this.width+1, columns );
+};
+
+
+/**
+ * Extract a submatrix.
+ * @param {number} rowStart Row index where to start the cut
+ * @param {number} rowEnd Row index where to end the cut
+ * @param {number} columnStart Column index where to start the cut
+ * @param {number} columnEnd Column index where to end the cut
+ * @returns {Matrix}
+ */
+FOUR.Matrix.prototype.submatrix = function (rowStart, rowEnd, columnStart, columnEnd) {
+  if( Math.min(rowStart, columnStart) < 0 ||
+      rowEnd     >= this.height ||
+      columnEnd  >= this.width  ||
+      rowStart    > rowEnd      ||
+      columnStart > columnEnd   ){
+          throw new TypeError( "Out of bounds" );
+  }
+
+  var mResult = rowEnd - rowStart + 1,
+      nResult = columnEnd - columnStart + 1;
+
+  var Result = new FOUR.Matrix( nResult, mResult );
+  for( var i = rowStart; i <= rowEnd; i++ ) {
+    var origRow = getRow( this, i );
+    var newRow  = origRow.slice( columnStart, columnEnd+1 );
+    setRow( Result, i - rowStart, newRow );
+  }
+
+  return Result;
+};
+
+
+FOUR.Matrix.prototype.decomposeLU = function () {
+  var swappedRows = 0,
+      LU = new FOUR.Matrix;
+      LU.copy(this);
+  
+  var i, j, k,
+      row_k, column_k, row_i,
+      rows = this.height,
+      columns = this.width;
+  
+  var pivot, maxArg, currArg, tempRow;
+  
+  for( k = 1; k <= rows; k++ ) {
+    pivot = 0;
+    maxArg = -1;
+    
+    column_k = getColumn( LU, k );
+    for( i = k; i <= rows; i++ ) {
+      currArg = Math.abs( column_k[i - 1] );
+      
+      if( currArg >= maxArg ) {
+        pivot = i;
+        maxArg = currArg;
+      }
+    }
+    
+    if( column_k[pivot - 1] === 0 ) {
+      throw new TypeError( "Matrix is singular" );
+    }
+    
+    if( pivot !== k ) {
+      tempRow = getRow( LU, pivot );
+      
+      setRow( LU, pivot, getRow( LU, k ) );
+      setRow( LU, k, tempRow );
+      
+      swappedRows++;
+    }
+    
+    row_k = getRow( LU, k );
+    for( i = k + 1; i <= rows; i++ ) {
+      row_i = getRow( LU, i );
+      
+      for( j = k; j < columns; j++ ) {
+        row_i[j] = row_i[j] - row_k[j] * ( row_i[k - 1] ) / row_k[k - 1];
+      }
+      
+      row_i[k - 1] = 0;
+      setRow( LU, i, row_i );
+    }
+  }
+  
+  // as a "hidden property" we attach the number of swapped rows
+  LU.swappedRows = swappedRows;
+  
+  return LU;
+};
+
+
+
+/**
+ * Augment with another matrix.
+ * @param {Matrix} M
+ * @returns {Matrix}
+ */
+FOUR.Matrix.prototype.augment = function (M) {
+  var rows = this.height,
+      columns = this.width,
+      columnsM = M.width;
+  
+  if( rows !== M.height ) {
+    throw new TypeError( 'Number of rows must match' );
+  }
+  
+  var Result = new FOUR.Matrix( columns + columnsM, rows );
+  
+  for( var i = 0; i < columns; i++ ) {
+    setColumn( Result, i, getColumn( this, i ) );
+  }
+  for( var j = 0; j < columnsM; j++ ) {
+    setColumn( Result, j + columns, getColumn( M, j ) );
+  }
+  
+  return Result;
+};
 
 
 })(this);
