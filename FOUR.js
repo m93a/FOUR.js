@@ -23,6 +23,7 @@ include("math/Shape.js");
 
 include("core/LogNode.js");
 include("core/TransformNode.js");
+include("core/ForEachVertexNode.js");
 include("core/ColorNode.js");
 include("core/CanvasNode.js");
 
