@@ -7,34 +7,161 @@
 <script src=demo.js></script>
 
 
-<script>
-function rotate(){
-  console.log("asdf");
-  camera.rotation.order = document.getElementById("order").value;
+<script>window.addEventListener("load",function(){
+var w = window;
+
+w.order = document.getElementById("order");
+w.rot0  = document.getElementById("rot0");
+w.rot1  = document.getElementById("rot1");
+w.rot2  = document.getElementById("rot2");
+w.rot3  = document.getElementById("rot3");
+w.rot4  = document.getElementById("rot4");
+w.rot5  = document.getElementById("rot5");
+w.canvas= document.getElementById("canvas");
+w.sensitivity = document.getElementById("sensitivity");
+w.symetry     = document.getElementById("symetry");
+
+var deg = Math.PI/180;
+var onlyX = false;
+var onlyY = false;
+
+
+w.rotate = function(){
+  camera.rotation.order = order.value;
   camera.rotation.set(
-    document.getElementById("rot0").value*2*Math.PI/360,
-    document.getElementById("rot1").value*2*Math.PI/360,
-    document.getElementById("rot2").value*2*Math.PI/360,
-    document.getElementById("rot3").value*2*Math.PI/360,
-    document.getElementById("rot4").value*2*Math.PI/360,
-    document.getElementById("rot5").value*2*Math.PI/360
+    rot0.value*deg,
+    rot1.value*deg,
+    rot2.value*deg,
+    rot3.value*deg,
+    rot4.value*deg,
+    rot5.value*deg
   );
 }
-</script>
+
+w.update = function(){
+  order.value = camera.rotation.order;
+  rot0 .value = camera.rotation.elements[0] /deg;
+  rot1 .value = camera.rotation.elements[1] /deg;
+  rot2 .value = camera.rotation.elements[2] /deg;
+  rot3 .value = camera.rotation.elements[3] /deg;
+  rot4 .value = camera.rotation.elements[4] /deg;
+  rot5 .value = camera.rotation.elements[5] /deg;
+}
+
+function mousemove(e){
+  if(e.altKey){
+    if(!onlyY) camera.rotation.elements[5] += e.movementX*(+sensitivity.value);
+    if(!onlyX) camera.rotation.elements[0] += e.movementY*(+sensitivity.value);
+  }else if(e.shiftKey){
+    if(!onlyY) camera.rotation.elements[2] += e.movementX*(+sensitivity.value);
+    if(!onlyX) camera.rotation.elements[4] += e.movementY*(+sensitivity.value);
+  }else{
+    if(!onlyY) camera.rotation.elements[1] += e.movementX*(+sensitivity.value);
+    if(!onlyX) camera.rotation.elements[3] += e.movementY*(+sensitivity.value);
+  }
+  
+  camera.updateMatrix();
+  camera.update();
+  update();
+}
+
+document.addEventListener("mousedown",function(){
+  console.log("?");
+});
+canvas.addEventListener("mousedown",function(){
+  console.log("!");
+  document.addEventListener("mousemove",mousemove);
+});
+document.addEventListener("mouseup",function(){
+  document.removeEventListener("mousemove",mousemove);
+});
+
+document.addEventListener("keydown",function(e){
+  switch(e.code){
+    case "KeyX":
+      onlyX = true;
+      break;
+    case "KeyY":
+      onlyY = true;
+      break;
+    case "KeyC":
+      var sym = +symetry.value*deg;
+      if(e.altKey){
+        if(!onlyY) camera.rotation.elements[5] = Math.round(camera.rotation.elements[5]/sym)*sym;
+        if(!onlyX) camera.rotation.elements[0] = Math.round(camera.rotation.elements[0]/sym)*sym;
+      }else if(e.shiftKey){
+        if(!onlyY) camera.rotation.elements[2] = Math.round(camera.rotation.elements[2]/sym)*sym;
+        if(!onlyX) camera.rotation.elements[4] = Math.round(camera.rotation.elements[4]/sym)*sym;
+      }else{
+        if(!onlyY) camera.rotation.elements[1] = Math.round(camera.rotation.elements[1]/sym)*sym;
+        if(!onlyX) camera.rotation.elements[3] = Math.round(camera.rotation.elements[3]/sym)*sym;
+      }
+      camera.updateMatrix();
+      camera.update();
+      update();
+      break;
+  }
+});
+document.addEventListener("keyup",function(e){
+  switch(e.code){
+    case "KeyX":
+      onlyX = false;
+      break;
+    case "KeyY":
+      onlyY = false;
+      break;
+  }
+});
+
+});</script>
+
+
+<style>
+
+#canvas {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pre {
+  font-family: monospace;
+}
+.pre li {
+  white-space: pre;
+}
+
+.flex {
+  display: flex;
+  justify-content: center;
+}
+
+.flex>li {
+  margin-right: 50px;
+}
+
+</style>
 
 </head>
 <body>
   <canvas id=canvas></canvas>
-  <ul>
-   <li>Rotations</li>
-   <ul style=font-family:monospace>
-     <li>order = <input id=order oninput=rotate() value="xy,xz,xw,yz,yw,zw">
-     <li>xy = <input id=rot0 oninput=rotate() value=0> deg.
-     <li>xz = <input id=rot1 oninput=rotate() value=0> deg.
-     <li>xw = <input id=rot2 oninput=rotate() value=0> deg.
-     <li>yz = <input id=rot3 oninput=rotate() value=0> deg.
-     <li>yw = <input id=rot4 oninput=rotate() value=0> deg.
-     <li>zw = <input id=rot5 oninput=rotate() value=0> deg.
-   </ul>
+  <ul class=flex>
+   <li>Rotations
+     <ul class=pre>
+       <li>order = <input id=order oninput=rotate() value="yz,xz,yw,xw,xy,zw"></li>
+       <li>xy = <input id=rot0 oninput=rotate() value=0> deg.</li>
+       <li>xz = <input id=rot1 oninput=rotate() value=0> deg.</li>
+       <li>xw = <input id=rot2 oninput=rotate() value=0> deg.</li>
+       <li>yz = <input id=rot3 oninput=rotate() value=0> deg.</li>
+       <li>yw = <input id=rot4 oninput=rotate() value=0> deg.</li>
+       <li>zw = <input id=rot5 oninput=rotate() value=0> deg.</li>
+     </ul>
+   </li>
+   <li>Controls
+     <ul class=pre>
+       <li>symetry     = <input id=symetry     oninput=rotate() value="45"></li>
+       <li>sensitivity = <input id=sensitivity oninput=rotate() value="-0.01"></li>
+     </ul>
+   </li>
 </body>
 </html>

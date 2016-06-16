@@ -56,9 +56,6 @@ FOUR.VisualNode.prototype.camera = null;
 
 Object.defineProperty(FOUR.VisualNode.prototype, "__feed", { value: function(food){
   
-  
-  console.log( food.faces[0] );
-  
   var D = food.dimension;
   //if(D+1 !== food.faces.length){ debugger; throw InternalError("Assert D+1 === faces.length"); }
   if(typeof this.processor !== "function"){ throw InternalError("Assert this.processor is a function"); }

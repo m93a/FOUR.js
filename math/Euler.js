@@ -176,7 +176,8 @@ Object.defineProperty(FOUR.Euler.prototype, "order",{
 });
 
 
-FOUR.Euler.prototype.set = FOUR.Matrix.prototype.set;
+FOUR.Euler.prototype.set     = FOUR.Matrix.prototype.set;
+FOUR.Euler.prototype.forEach = FOUR.Matrix.prototype.forEach;
 
 
 })(this);

@@ -71,6 +71,11 @@ FOUR.Camera.prototype.update = function update(){
   if(!this.scene) return;
   if(!this.__out.length) return;
   
+  var PI2 = 2*Math.PI;
+  this.rotation.forEach(function(a){
+    return (a+PI2)%PI2;
+  });
+  
   var D = this.scene.dimension;
   
   var v1 = new FOUR.Vector( D+1 );
