@@ -67,7 +67,8 @@ Object.defineProperty( FOUR.Vector.prototype, "width",{
  * returns the dimension of the vector!
  */
 
-FOUR.Vector.prototype.norm = function(){
+FOUR.Vector.prototype.norm =
+FOUR.Vector.prototype.magnitude = function(){
   
   var sum = 0,
       i = -1;
@@ -82,13 +83,45 @@ FOUR.Vector.prototype.norm = function(){
 
 
 /**
- * Returns the normalised vector – with the same direction as the original
- * but with the magnitude of one: û = u⃗ / ||u⃗||
+ * Turns the vector into a normalised one – it keeps its direction
+ * but gets the magnitude of one: û = u⃗ / ||u⃗||
+ * @returns {FOUR.Vector} this for chaining
  */
 
-FOUR.Vector.prototype.unit = function(){
+FOUR.Vector.prototype.normalize = function(){
   
+  var norm = this.norm();
   
+  for(var i = 0; i < this.length; i++){
+    this.elements[i] /= norm;
+  }
+  
+  return this;
+  
+};
+
+
+/**
+ * Computes the distance from this vector to v.
+ * @param {FOUR.Vector} v
+ */
+
+FOUR.Vector.prototype.distanceTo = function(v){
+  
+  var l = this.length;
+  if(v.length !== l){
+    throw new TypeError("Argument 1 has to be of the same length as this vector.");
+  }
+  
+  var te = this.elements,
+      ve = v.elements,
+      distance = 0;
+  
+  for( var i = 0; i < l; i++ ){
+    distance += sq( te[i] - ve[i] );
+  }
+  
+  return Math.sqrt(distance);
   
 };
 

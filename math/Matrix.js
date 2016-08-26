@@ -75,9 +75,6 @@ function setColumn( M, n, a ){
     e[ i*w + n ] = a[i];
 }
 
-window.gC = getColumn;
-window.sC = setColumn;
-
 
 /**
  * Matrix of any dimesions
@@ -235,6 +232,105 @@ FOUR.Matrix.multiply = function multiply(A, B, C){
   
   return C;
 }
+
+
+/**
+ * Adds two matrices, returns a new one
+ * @param   {FOUR.Matrix}  A
+ * @param   {FOUR.Matrix}  B  has same dimensions as A
+ * @param   {FOUR.Matrix} [C] write into this matrix
+ * @returns {FOUR.Matrix}  C
+ */
+
+FOUR.Matrix.add = function add(A, B, C){
+  if( !( A instanceof FOUR.Matrix &&
+         B instanceof FOUR.Matrix &&
+         A.width  == B.width &&
+         A.height == B.height        )){
+    throw new TypeError("Arguments 1 and 2 must be two matrices of the same dimensions.");
+  }
+  
+  if( C instanceof FOUR.Matrix ){
+    if( C.width !== A.width || C.height !== A.height ) C.resize(A.width, A.height);
+    C.zero();
+    
+  }else{
+    C = new FOUR.Matrix(A.width, A.height);
+    if(A.width === A.height) C.zero();
+  }
+  
+  for(var i = 0; i < A.length; i++){
+    C.elements[i] = A.elements[i] + B.elements[i];
+  }
+  
+  return C;
+  
+};
+
+
+/**
+ * Subtracts two matrices, returns a new one
+ * @param   {FOUR.Matrix}  A
+ * @param   {FOUR.Matrix}  B  has same dimensions as A
+ * @param   {FOUR.Matrix} [C] write into this matrix
+ * @returns {FOUR.Matrix}  C
+ */
+
+FOUR.Matrix.sub = function add(A, B, C){
+  if( !( A instanceof FOUR.Matrix &&
+         B instanceof FOUR.Matrix &&
+         A.width  == B.width &&
+         A.height == B.height        )){
+    throw new TypeError("Arguments 1 and 2 must be two matrices of the same dimensions.");
+  }
+  
+  if( C instanceof FOUR.Matrix ){
+    if( C.width !== A.width || C.height !== A.height ) C.resize(A.width, A.height);
+    C.zero();
+    
+  }else{
+    C = new FOUR.Matrix(A.width, A.height);
+    if(A.width === A.height) C.zero();
+  }
+  
+  for(var i = 0; i < A.length; i++){
+    C.elements[i] = A.elements[i] - B.elements[i];
+  }
+  
+  return C;
+  
+};
+
+
+/**
+ * Returns the result of multiplying this matrix with
+ * another matrix M.
+ * @see {@link FOUR.Matrix.multiply}
+ * @argument {FOUR.Matrix} M
+ */
+FOUR.Matrix.prototype.multiply = function multiply(M){
+  return FOUR.Matrix.multiply(this,M);
+};
+
+
+/**
+ * Returns the result of adding this matrix to another matrix M.
+ * @see {@link FOUR.Matrix.add}
+ * @argument {FOUR.Matrix} M
+ */
+FOUR.Matrix.prototype.add = function add(M){
+  return FOUR.Matrix.add(this,M);
+};
+
+
+/**
+ * Returns the result of subtracting matrix M from this one.
+ * @see {@link FOUR.Matrix.add}
+ * @argument {FOUR.Matrix} M
+ */
+FOUR.Matrix.prototype.sub = function add(M){
+  return FOUR.Matrix.sub(this,M);
+};
 
 
 Object.defineProperty( FOUR.Matrix.prototype, "length",{

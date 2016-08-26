@@ -65,11 +65,7 @@ function mousemove(e){
   update();
 }
 
-document.addEventListener("mousedown",function(){
-  console.log("?");
-});
 canvas.addEventListener("mousedown",function(){
-  console.log("!");
   document.addEventListener("mousemove",mousemove);
 });
 document.addEventListener("mouseup",function(){

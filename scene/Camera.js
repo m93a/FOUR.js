@@ -28,7 +28,6 @@ FOUR.Camera = function constructor(){
     
     for(var obj of self.scene.__set){
       if(obj.needsUpdate){
-        console.log(obj);
         self.update();
         break;
       }
@@ -145,7 +144,6 @@ FOUR.Camera.prototype.update = function update(){
     }
   }
   
-  console.log("n", food);
   this.__feed(food);
   
 };

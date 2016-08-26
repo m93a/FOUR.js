@@ -1,3 +1,6 @@
 [submodule "lib/clone"]
 	path = lib/clone
 	url = https://github.com/dankogai/js-object-clone.git
+[submodule "url"]
+	path = url
+	url = https://gist.github.com/2553dd45de35aa05d0233c6f9dc04bc2.git

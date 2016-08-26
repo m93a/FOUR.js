@@ -1,11 +1,14 @@
 (function(){
 
+var orig = new URL('.',document.currentScript.src);
+
 function include( src ){
-  document.write("<script src=\""+src+"\"></script>");
+  document.write("<script src=\"" + new URL(src, orig) + "\"></script>");
 }
 
 
 include("math/nCr.js");
+include("math/random.js");
 include("lib/clone/object-clone.js");
 
 include("core/constants.js");
